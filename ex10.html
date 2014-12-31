@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Using the JSON Path part of the JSON_EXT package
+*/
+
+set serveroutput on;
+declare
+  obj json := json(
+&#39;{
+  &quot;a&quot; : true,
+  &quot;b&quot; : [1,2,&quot;3&quot;],
+  &quot;c&quot; : {
+    &quot;d&quot; : [[&quot;array of array&quot;], null, { &quot;e&quot;: 7913 }]
+  }
+}&#39;);
+begin
+  -- Having understood ex8.sql and ex9.sql, we now what to delete elements with
+  -- JSON Path. The JSON Path remove method does only remove an element if it 
+  -- exists. Unlike put, it does not build up a structure but uses get to 
+  -- investigate if the structure exists. The only time remove should fail, is 
+  -- when you ask it to remove the entire structure. 
+  -- (Which you could easily do yourself &gt;&gt; obj := json() &lt;&lt; )
+
+  dbms_output.put_line(&#39;Example 1: remove a&#39;);
+  json_ext.remove(obj, &#39;a&#39;);
+  obj.print;
+
+  dbms_output.put_line(&#39;Example 2: remove third element of b&#39;);
+  json_ext.remove(obj, &#39;b[3]&#39;);
+  obj.print;
+
+  dbms_output.put_line(&#39;Example 3: remove first element of b&#39;);
+  json_ext.remove(obj, &#39;b[1]&#39;);
+  obj.print;
+  
+  dbms_output.put_line(&#39;Example 4: remove e in d in c&#39;);
+  json_ext.remove(obj, &#39;c.d[3].e&#39;);
+  obj.print;
+
+  dbms_output.put_line(&#39;Example 5: remove array of array in d&#39;);
+  json_ext.remove(obj, &#39;c.d[1]&#39;);
+  obj.print;
+
+  dbms_output.put_line(&#39;Example 6: remove null element in d&#39;);
+  json_ext.remove(obj, &#39;c.d[1]&#39;);
+  obj.print;
+
+  dbms_output.put_line(&#39;Example 7: remove b and c&#39;);
+  json_ext.remove(obj, &#39;c&#39;);
+  json_ext.remove(obj, &#39;b&#39;);
+  obj.print;
+
+  -- thats it!
+end;
+/</code></pre>
+</body>
+</html>

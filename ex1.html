@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+    json parses varchar2 strings 
+    max json length is 32000, 
+    max pair_name length is 4000, 
+    max string length is 4000
+*/
+
+set serveroutput on format wrapped;
+declare
+  obj json;
+begin
+  obj := json(&#39;{&quot;a&quot;: true }&#39;);
+  obj.print;
+  --more complex json:
+  obj := json(&#39;
+{
+  &quot;a&quot;: null,
+  &quot;b&quot;: 12.243,
+  &quot;c&quot;: 2e-3,
+  &quot;d&quot;: [true, false, &quot;abdc&quot;, [1,2,3]],
+  &quot;e&quot;: [3, {&quot;e2&quot;:3}],
+  &quot;f&quot;: {
+    &quot;f2&quot;:true
+  }
+}&#39;);
+  obj.print;
+  obj.print(false); --compact way
+end;
+/</code></pre>
+</body>
+</html>

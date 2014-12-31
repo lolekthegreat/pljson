@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/* Using the pretty-print with anydata */
+set serveroutput on;
+declare 
+  obj json;
+begin
+  obj := json(&#39;{&quot;a&quot;: &quot;true&quot;}&#39;);
+  --directly from json_printer
+  dbms_output.put_line(json_printer.pretty_print_any(json_ext.get_json_value(obj, &#39;a&#39;)));
+  --from json_ext varchar2
+  dbms_output.put_line(json_ext.pp(obj, &#39;a&#39;));
+  --from json_ext dbms_output.put_line
+  json_ext.pp(obj, &#39;a&#39;);
+  --from json_ext htp.print
+  --json_ext.pp_htp(obj, &#39;a&#39;);
+end;
+/</code></pre>
+</body>
+</html>

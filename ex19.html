@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/* Outputting unescaped values */
+
+set serveroutput on;
+declare 
+  obj json;
+begin
+  obj := json();
+  obj.put(&#39;foo1&#39;, json_value(&#39;function() { a = 12;}&#39;));
+  obj.put(&#39;foo2&#39;, json_value(&#39;function() { a = 12;}&#39;, false));
+  obj.print; --beware - the output does not conform to the JSON standard now.
+end;
+/</code></pre>
+</body>
+</html>

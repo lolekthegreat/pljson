@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/* Conversion between json and json_list, featuring get_keys and get_values */
+
+set serveroutput on;
+declare 
+  l_obj json_list := json_list(&#39;[1,2,3]&#39;);
+  j_obj json;
+begin
+  j_obj := json(l_obj); --conversion in constructor
+  j_obj.print;
+  
+  j_obj := json(&#39;{&quot;a&quot;:true, &quot;b&quot;:17}&#39;);
+  l_obj := j_obj.get_values;
+  l_obj.print;
+  
+  l_obj.append(true);
+  j_obj := json(l_obj);
+  
+  j_obj.print;
+  j_obj.get_keys().print;
+  j_obj.get_values().print;
+ 
+end;
+/</code></pre>
+</body>
+</html>

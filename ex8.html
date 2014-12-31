@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Using the JSON Path part of the JSON_EXT package
+*/
+
+set serveroutput on;
+declare
+  obj json := json(
+&#39;{
+  &quot;a&quot; : true,
+  &quot;b&quot; : [1,2,&quot;3&quot;],
+  &quot;c&quot; : {
+    &quot;d&quot; : [[&quot;array of array&quot;], null, { &quot;e&quot;: 7913 }]
+  }
+}&#39;);
+
+begin
+  /* What is the PL/JSON definition of JSON Path? */
+  -- In languages such as javascript and python, one can interact with a json 
+  -- structure in a sensible manner. But in PL/JSON we have to extract each 
+  -- element as anydata, inspect the type and convert it. Basically what we want 
+  -- to, is to extract an element without having to do any conversion. We know of
+  -- more advanced implementations (http://goessner.net/articles/JsonPath/),
+  -- but it lacks a formal grammar description and the use of regular expressions
+  -- in the implementation is quite scary. The following examples explains how
+  -- useful JSON Path is to PL/JSON.
+   
+  obj.print;
+  -- If it exists, we want to get the 3rd element of member b, but only if it is
+  -- an integer. Otherwise we want the e value of the 3rd element of d (also int).
+  -- The code should be secure (no exceptions)
+  /* Old way - still valid though*/
+  declare 
+    printme number := null;
+    temp json_list;
+    tempdata json_value;
+    tempobj json;
+  begin
+    if(obj.exist(&#39;b&#39;)) then
+      if(obj.get(&#39;b&#39;).is_array) then
+        temp := json_list(obj.get(&#39;b&#39;));
+        tempdata := temp.get(3); --return null on outofbounds
+        if(tempdata is not null) then
+          if(tempdata.is_number) then
+            printme := tempdata.get_number;
+          end if;
+        end if;
+      end if; 
+    end if;
+    if(printme is null) then
+      if(obj.exist(&#39;c&#39;)) then
+        tempdata := obj.get(&#39;c&#39;);
+        if(tempdata.is_object) then
+          tempobj := json(tempdata);
+          if(tempobj.exist(&#39;d&#39;)) then
+            tempdata := tempobj.get(&#39;d&#39;);
+            if(tempdata.is_array) then
+              temp := json_list(tempdata);
+              tempdata := temp.get(3);
+              if(tempdata.is_object) then
+                tempobj := json(tempdata);
+                tempdata := tempobj.get(&#39;e&#39;);
+                if(tempdata is not null and tempdata.is_number) then
+                  printme := tempdata.get_number;
+                end if;
+              end if;
+            end if;
+          end if;
+        end if;
+      end if;
+    end if;
+    if(printme is not null) then dbms_output.put_line(printme); end if;
+  end;
+
+  --now the JSON Path way:
+  declare 
+    printme number := null;
+  begin
+    printme := json_ext.get_number(obj, &#39;b[3]&#39;);
+    if(printme is null) then printme := json_ext.get_number(obj, &#39;c.d[3].e&#39;); end if;
+    if(printme is not null) then dbms_output.put_line(printme); end if;
+  end;
+  --see the point???
+
+  /* About JSON Path for PL/JSON */
+  -- it never raises an exception (null is returned instead)
+  -- arrays are 1-indexed 
+  -- use dots to navigate through the json scopes.
+  -- the empty string as path returns the entire json object.
+  -- JSON Path only work with JSON as input.
+  -- 7 get types are supported: string, number, bool, null, json, json_list and date!
+  -- spaces inside [ ] are not important, but is important otherwise
+  
+  obj := json(&#39;{&quot; a &quot;: &quot;String&quot;, &quot;b&quot;: false, &quot;c&quot;: null, &quot;d&quot;:{}, &quot;e&quot;:[],&quot;f&quot;: &quot;2009-09-01 00:00:00&quot;, &quot;g&quot;:-789456}&#39;);  
+  dbms_output.put_line(json_ext.get_string(obj, &#39; a &#39;));
+  if(json_ext.get_json_value(obj, &#39;c&#39;) is not null) then dbms_output.put_line(&#39;null&#39;); end if;
+  dbms_output.put_line(json_ext.get_json(obj, &#39;d&#39;).to_char(false));
+  dbms_output.put_line(json_ext.get_json_list(obj, &#39;e&#39;).to_char);
+  dbms_output.put_line(json_ext.get_date(obj, &#39;f&#39;));
+  dbms_output.put_line(json_ext.get_number(obj, &#39;g&#39;));
+
+end;
+/</code></pre>
+</body>
+</html>

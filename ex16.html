@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>set serveroutput on;
+declare 
+  ret json_list;
+begin
+  ret := json_dyn.executeList(&#39;select * from tab&#39;);
+  ret.print;
+end;
+/
+declare 
+  ret json;
+begin
+  ret := json_dyn.executeObject(&#39;select * from tab&#39;);
+  ret.print;
+end;
+/
+desc tab</code></pre>
+</body>
+</html>

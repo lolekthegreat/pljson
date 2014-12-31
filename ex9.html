@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Using the JSON Path part of the JSON_EXT package
+*/
+
+set serveroutput on;
+declare
+  obj json := json(
+&#39;{
+  &quot;a&quot; : true,
+  &quot;b&quot; : [1,2,&quot;3&quot;],
+  &quot;c&quot; : {
+    &quot;d&quot; : [[&quot;array of array&quot;], null, { &quot;e&quot;: 7913 }]
+  }
+}&#39;);
+  tempobj json;
+  temparray json_list;
+begin
+  /* What is the PL/JSON definition of JSON Path? */
+  -- In languages such as javascript and python, one can interact with a json 
+  -- structure in a sensible manner. In PL/JSON every object is converted into
+  -- an anydata structure. When the object is converted back, you actually work
+  -- on a copy. That makes nested structures quite difficult to work with. The 
+  -- aim of JSON Path is to support changes in nested structures.
+   
+  -- Suppose we want to change e : 7913 to e : 123. Then we might try to do it 
+  -- like this:
+  tempobj := json(obj.get(&#39;c&#39;));
+  temparray := json_list(tempobj.get(&#39;d&#39;));
+  tempobj := json(temparray.last);
+  dbms_output.put_line(&#39;Got the right inner json?&#39;);
+  tempobj.print;
+  dbms_output.put_line(&#39;Yes - now change the value&#39;);
+  tempobj.put(&#39;e&#39;,123);
+  tempobj.print;
+  dbms_output.put_line(&#39;Excellent - but wait! Isn&#39;&#39;t that reflected in the global object?&#39;);
+  obj.print;
+  dbms_output.put_line(&#39;Sadly no - we are working on copies that should be inserted again!&#39;);
+  
+  -- To make it work we should keep the copies and propergate them back into their positions.
+  -- We&#39;re not gonna do that. Instead let JSON Path deal with it:
+  dbms_output.put_line(&#39;Can JSON Path in JSON_EXT help us?&#39;);
+  json_ext.put(obj, &#39;c.d[3].e&#39;, 123);
+  obj.print;
+  dbms_output.put_line(&#39;Great!&#39;);
+  
+  -- Some notes regarding the put methods:
+  -- if you provide an invalid path then an error is raised (hopefully)
+  -- you can, however, specify a path that doesn&#39;t exists but should be created.
+  -- arrays are 1-indexed.
+  -- spaces are significant outside array notation
+  -- when a too large array is specified, the gaps will be filled with json_null&#39;s
+
+  dbms_output.put_line(&#39;Example 1:&#39;);
+  obj := json();
+  json_ext.put(obj, &#39;a[2].data.value[1][2].myarray&#39;, json_list(&#39;[1,2,3]&#39;));
+  obj.print;
+
+  -- use put to fill out the &quot;holes&quot;
+  dbms_output.put_line(&#39;Example 2:&#39;);
+  json_ext.put(obj, &#39;a[1]&#39;, &#39;filler1&#39;);
+  json_ext.put(obj, &#39;a[2].data.value[1][1]&#39;, &#39;filler2&#39;);
+  obj.print;
+  
+  -- replace larger structures:
+  dbms_output.put_line(&#39;Example 3:&#39;);
+  json_ext.put(obj, &#39;a[2].data&#39;, 7913);
+  obj.print;
+
+  -- the empty string is an error - and it doesn&#39;t make sense
+end;
+/</code></pre>
+</body>
+</html>

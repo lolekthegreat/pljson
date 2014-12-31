@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Working with errors/exceptions
+  The parser follows the json specification described @ www.json.org  
+*/
+
+set serveroutput on format wrapped;
+declare
+  scanner_exception exception;
+  pragma exception_init(scanner_exception, -20100);
+  parser_exception exception;
+  pragma exception_init(parser_exception, -20101);
+
+  obj json;
+begin
+  obj := json(&#39;this is not valid json&#39;); 
+  --displays ORA-20100: JSON Scanner exception @ line: 1 column: 1 - Expected: &#39;true&#39;
+  --thats because the closest match was a boolean
+  obj.print;
+exception 
+  when scanner_exception then
+    dbms_output.put_line(SQLERRM);
+  when parser_exception then
+    dbms_output.put_line(SQLERRM);
+end;
+/</code></pre>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/* Using JSONML */
+
+set serveroutput on;
+declare 
+  arr json_list;
+begin
+  arr := json_ml.xmlstr2json(&#39;&lt;abc value=&quot;123&quot;&gt;123&lt;/abc&gt;&#39;);
+  arr.print;
+end;
+/</code></pre>
+</body>
+</html>

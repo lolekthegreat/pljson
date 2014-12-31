@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Building JSON objects with the API
+*/
+
+set serveroutput on format wrapped;
+declare
+  obj json;
+  procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
+begin
+  p(&#39;Build a little json structure&#39;);
+  obj := json(); --an empty structure
+  obj.put(&#39;A&#39;, &#39;a little string&#39;);
+  obj.put(&#39;B&#39;, 123456789);
+  obj.put(&#39;C&#39;, true);
+  obj.put(&#39;D&#39;, false);
+  obj.put(&#39;F&#39;, json_value.makenull);
+  obj.print;
+  p(&#39;add with position&#39;);
+  obj.put(&#39;E&#39;, &#39;Wow thats great!&#39;, 5);
+  obj.print;
+  p(&#39;replace ignores position&#39;);
+  obj.put(&#39;C&#39;, &#39;Maybe I should have removed C before the insertion.&#39;, 5);
+  obj.print;
+  p(&#39;remove and put&#39;);
+  obj.remove(&#39;C&#39;);
+  obj.put(&#39;C&#39;, &#39;Now it works.&#39;, 5);
+  obj.print;
+  p(&#39;you can count the direct members in a json object&#39;);
+  dbms_output.put_line(obj.count);
+  p(&#39;you can also test if an element exists (note that due to oracle the method is not named &quot;exists&quot;)&#39;);
+  if(not obj.exist(&#39;json is good&#39;)) then
+    dbms_output.put_line(&#39;Well it is!&#39;);
+    obj.put(&#39;json is good&#39;, &#39;Yes sir!&#39;, -10); -- defaults to 1
+    if(obj.exist(&#39;json is good&#39;)) then
+      obj.print;
+      dbms_output.put_line(&#39;:-)&#39;);
+    end if;
+  end if;
+  p(&#39;you can also put json or json_lists as values:&#39;);
+  obj := json(); --fresh json;
+  obj.put(&#39;Nested JSON&#39;, json(&#39;{&quot;lazy construction&quot;: true}&#39;));
+  obj.put(&#39;An array&#39;, json_list(&#39;[1,2,3,4,5]&#39;));
+  obj.print;
+end;
+/</code></pre>
+</body>
+</html>

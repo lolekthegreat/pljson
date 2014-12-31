@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  Building JSON_List with the API
+*/
+
+set serveroutput on format wrapped;
+declare
+  obj json_list;
+  procedure p(v varchar2) as begin dbms_output.put_line(null);dbms_output.put_line(v); end;
+begin
+  p(&#39;Building the first list&#39;);
+  obj := json_list(); --an empty structure
+  obj.append(&#39;a little string&#39;);
+  obj.append(123456789);
+  obj.append(true);
+  obj.append(false);
+  obj.append(json_value);
+  obj.print;
+  p(&#39;add with position&#39;);
+  obj.append(&#39;Wow thats great!&#39;, 5);
+  obj.print;
+  p(&#39;remove with position&#39;);
+  obj.remove(4);
+  obj.print;
+  p(&#39;remove first&#39;);
+  obj.remove_first;
+  obj.print;
+  p(&#39;remove last&#39;);
+  obj.remove_last;
+  obj.print;
+  p(&#39;you can display the size of an list&#39;);
+  dbms_output.put_line(obj.count);
+  p(&#39;you can also add json or json_lists as values:&#39;);
+  obj := json_list(); --fresh list;
+  obj.append(json(&#39;{&quot;lazy construction&quot;: true}&#39;).to_json_value);
+  obj.append(json_list(&#39;[1,2,3,4,5]&#39;));
+  obj.print;
+  p(&#39;however notice that we had to use the &quot;to_json_value&quot; function on the json object&#39;);
+end;
+/</code></pre>
+</body>
+</html>

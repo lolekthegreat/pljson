@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
+<pre class="plsql"><code>/*
+  lists is also valid json text
+*/
+
+set serveroutput on format wrapped;
+declare
+  obj json_list;
+begin
+  obj := json_list(&#39;[1,2,3,[3, []]]&#39;); --empty list and nested lists are supported
+  obj.print;
+  dbms_output.put_line(obj.to_char); --equivalent to print
+  dbms_output.put_line(obj.to_char(false)); --equivalent to print(false) -- compact
+end;
+/</code></pre>
+</body>
+</html>

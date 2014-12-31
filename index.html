@@ -1,1 +1,262 @@
-Testing Grunt Github Pages
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+</head>
+<body>
+<section id="purpose" class="level1">
+<h1>Purpose</h1>
+<p>The goal of PL/JSON is to create a correct implementation of JSON to use in a PL/SQL environment. The Oracle object syntax has been choosen to ensure a straightforward and easy way to decode and encode JSON. PL/JSON is delivered AS IS and we cannot make any guarantee or be held responsible to any unwanted effects that may arise from using this software. Although we would like to stress that we have tested and used this software and would like to think that it is a safe product to use.</p>
+</section>
+<section id="description" class="level1">
+<h1>Description</h1>
+<p>Parsing and emitting JSON is done in two packages, but you will rarely need to access these directly. The essential objects are linked to the relevant functions in the packages (in constructors and output methods). Basically PL/JSON can be used in two ways: Either you manually build up an object structure and emit JSON text with the <code>to_char</code> method or you parse JSON text into a object structure and use the objects in PL/SQL. Obviously you could also parse JSON text into objects, modify these and then emit JSON text. There are only three objects you should know: <code>JSON</code>, <code>JSON_LIST</code> and <code>JSON_VALUE</code>. The <code>JSON</code> object can hold an object described by the <code>{ }</code> syntax and is named <code>JSON</code> rather than <code>JSON_OBJECT</code> to keep the name short and the fact that an object with the name object sounds silly. The <code>JSON_LIST</code> object can hold an array described with the <code>[ ]</code> syntax. The postfix &quot;list&quot; was choosen over &quot;array&quot; for two reasons, one: to keep it short, two: there seams to be a naming standard in Oracle types that the postfix &quot;array&quot; is being used to describe types with the &quot;table of&quot; construction. The last type <code>JSON_VALUE</code> contains the primitive simple types (strings, numbers, bools, null), but can also contain an array or an object. The object model for PL/JSON is shown in figure <a href="#PL/JSON%20Object%20Model">PL/JSON Object Model</a>:</p>
+<figure>
+<img src="visual.jpg" alt="PL/JSON Object Model" /><figcaption>PL/JSON Object Model</figcaption>
+</figure>
+</section>
+<section id="in-the-release" class="level1">
+<h1>In The Release</h1>
+<ul>
+<li>Install script</li>
+<li>Uninstall script</li>
+<li>4 new oracle types ready to use in your database</li>
+<li>3 packages (parser, printer and extension)</li>
+<li>A few examples files</li>
+<li>Some testing scripts - creates and delete a table (<code>JSON_TESTSUITE</code>)</li>
+<li>Optional addons packages</li>
+</ul>
+</section>
+<section id="getting-started" class="level1">
+<h1>Getting Started</h1>
+<p>To get started using this product, you should first install the product with the install script and then take a look at the examples in the <em>examples</em> folder. The content of each example file are:</p>
+<ul>
+<li><a href="ex1.html">ex1.sql</a>: Simple creation of a JSON object</li>
+<li><a href="ex2.html">ex2.sql</a>: Simple creation of a JSON list</li>
+<li><a href="ex3.html">ex3.sql</a>: Working with parser exceptions</li>
+<li><a href="ex4.html">ex4.sql</a>: Building an object with the API</li>
+<li><a href="ex5.html">ex5.sql</a>: Building a list with the API</li>
+<li><a href="ex6.html">ex6.sql</a>: Working with variables as copies</li>
+<li><a href="ex7.html">ex7.sql</a>: Using the extension package</li>
+<li><a href="ex8.html">ex8.sql</a>: Using JSON Path getters</li>
+<li><a href="ex9.html">ex9.sql</a>: Using JSON Path putters</li>
+<li><a href="ex10.html">ex10.sq</a>: Using JSON Path remove</li>
+<li><a href="ex11.html">ex11.sq</a>: Using the <code>TO_CLOB</code> method to save JSON</li>
+<li><a href="ex12.html">ex12.sq</a>: Pretty print with JSON Path</li>
+<li><a href="ex13.html">ex13.sq</a> and <a href="ex14.html">ex14.sql</a>: Binary support with base64</li>
+<li><a href="ex15.html">ex15.sq</a>: Conversion between <code>JSON</code> and <code>JSON_LIST</code></li>
+<li><a href="ex16.html">ex16.sq</a>: Dynamic JSON (requires installation of the <code>json_dyn</code> package)</li>
+<li><a href="ex17.html">ex17.sq</a>: Duplicate check and fast creation of JSON</li>
+<li><a href="ex18.html">ex18.sq</a>: Convert XML to <code>JSON_LIST</code> with JSONML</li>
+<li><a href="ex19.html">ex19.sq</a>: Output unescaped strings</li>
+</ul>
+<p>You can also post questions on <a href="https://stackoverflow.com">StackOverflow</a> using the <a href="http://stackoverflow.com/questions/tagged/pljson">pljson</a> tag. Of course, you could also search the internet for information - <a href="https://google.com/search?q=pljson">Google</a> is your friend.</p>
+</section>
+<section id="tweaks" class="level1">
+<h1>Tweaks</h1>
+<p>You can tweak the behaviour of PL/JSON by setting various variables in the packages. The following sections are a description of the possible adjustments you can do.</p>
+<section id="json_printer" class="level2">
+<h2>JSON_PRINTER</h2>
+<p>In the printer package you can edit the line break method to linux, windows or mac style. You can also change the indentation to the tabular char, or change the number of spaces.</p>
+</section>
+<section id="json_parser" class="level2">
+<h2>JSON_PARSER</h2>
+<p>The parser is extended to accept more than just pure JSON. The variable &quot;json_strict&quot; is defaulted to false and can be set to true to force PL/JSON to only accept proper JSON. The current implementation allows input to contain comments with the <code>/* */</code> notation. Furthermore it extends the definition of a string to allow singlequotes and converts names into strings. The railroad diagram below shows the grammar for names accepted by PL/JSON:</p>
+<pre><code>name     : (letter) ((letter| digits | us)*);</code></pre>
+<p>However, the values &quot;true&quot;, &quot;false&quot; and &quot;null&quot; will not be handled as names.</p>
+<p>Example of usage with the extended grammar:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">{
+  <span class="dt">abc </span>: <span class="st">&#39;123&quot;&#39;</span>
+}</code></pre>
+<p>Parsed and emitted:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">{
+  <span class="st">&quot;abc&quot;</span> : <span class="st">&quot;123</span><span class="ch">\&quot;</span><span class="st">&quot;</span>
+}</code></pre>
+</section>
+<section id="json_parser-javascript-functions" class="level2">
+<h2>JSON_PARSER: Javascript functions</h2>
+<p>Even though javascript functions are not a part of JSON, you might want to emit functions if your receiving client is a browser. This is how you do it:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">declare</span>
+  obj json := json();
+<span class="kw">begin</span>
+  obj.put(<span class="st">&#39;test&#39;</span>, json_value(<span class="st">&#39;function() {return 1;}&#39;</span>, esc =&gt; <span class="kw">false</span> ));
+  obj.print;
+<span class="kw">end</span>;</code></pre>
+<p>The output is:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">{
+  <span class="st">&quot;test&quot;</span>: <span class="co">/**/</span><span class="kw">function</span>() {<span class="kw">return</span> <span class="dv">1</span>;}<span class="co">/**/</span>
+}</code></pre>
+<p>Which is not valid JSON but will work in javascript. The surrounding <code>/**/</code> is a message to the parser to start and stop building a unescaped <code>json_value</code> string:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">declare</span>
+  obj json := json(<span class="st">&#39;{&quot;test&quot;: /**/function() {return 1;}/**/}&#39;</span>);
+<span class="kw">begin</span>
+  obj.print;
+<span class="kw">end</span>;
+<span class="co">----</span>
+{
+  <span class="ot">&quot;test&quot;</span>: <span class="co">/**/</span>function() {<span class="kw">return</span> <span class="dv">1</span>;}<span class="co">/**/</span>
+}</code></pre>
+</section>
+<section id="json_ext" class="level2">
+<h2>JSON_EXT</h2>
+<p>The extension package is now mandatory. It contains the path implementation and adds support for dates and binary lob's. Dates are not a part of the JSON standard, so it's up to you to specify how you would like to handle dates. The current implementation specifies a date to be a string that which follows the format: yyyy-mm-dd hh24:mi:ss. If your needs differ from this, then you can rewrite the functions in the package.</p>
+</section>
+</section>
+<section id="json-path" class="level1">
+<h1>JSON PATH</h1>
+<p>A JSON Path is a way to navigate in a JSON object. The implementation is quite simple and does not support all the features that are available in Stefan Goessners JavaScript, Python and PHP implementation of JSON Path. Actually, all that is does is to add the support for navigation in JSON, that are allready build in into those languages. When navigating with JSON Path in PL/JSON, members of JSON objects are found with the dot operator while elements in lists are found with square brackets. Accepted input in path navigation is formalized with these railroad diagrams (ws is insignificant whitespace):</p>
+<pre><code>jsonpath : ((alphanum | &#39;space&#39;)*) (( &#39;.&#39; ((alphanum | &#39;space&#39;)+) | &#39;[&#39; (&#39;ws&#39;) (string | integer) (&#39;ws&#39;) &#39;]&#39; (&#39;ws&#39;) )*);
+string   : (dquote ((unia|esc)*) dquote) | (quote ((unib|esc)*) quote);
+integer  : pdigits (() + digits);</code></pre>
+<p>From version 0.9.6 the implementation accepts an extended grammar where you use a zero-indexed JSON Path. The following examples show how you can use JSON Path to extract from a JSON object.</p>
+<p>The JSON Object:</p>
+<pre class="sourceCode javascript"><code class="sourceCode javascript">{
+  <span class="st">&quot;xyz&quot;</span> : {
+    <span class="st">&quot;abc&quot;</span> : [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,[<span class="dv">4</span>,<span class="dv">5</span>,{<span class="st">&quot;123&quot;</span>:<span class="dv">45</span>}]]
+  }
+}</code></pre>
+<p>Extract the ''abc'' list:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">json_ext.get_json_list(obj, 
+  <span class="st">&#39;xyz.abc&#39;</span>).print;
+<span class="co">-----------</span>
+[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, [<span class="dv">4</span> ,<span class="dv">5</span> , {
+  <span class="ot">&quot;123&quot;</span> : <span class="dv">45</span>
+}]]</code></pre>
+<p>Extract the ''123'' number:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">json_ext.get_number(obj,
+  <span class="st">&#39;xyz.abc[4][3].123&#39;</span>).print;
+<span class="co">----------</span>
+<span class="dv">45</span></code></pre>
+<p>As of version 0.8.4, square brackets can be used to extract JSON members like you would do in JavaScript:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">json_ext.get_number(obj,
+  <span class="st">&#39;[&quot;xyz&quot;][&quot;abc&quot;][4][3][&quot;123&quot;]&#39;</span>).print;
+<span class="co">----------</span>
+<span class="dv">45</span></code></pre>
+<p>You can also use JSON Path to modify an existing JSON Object:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">json_ext.put(obj, <span class="st">&#39;xyz.abc&#39;</span>,
+  json(<span class="st">&#39;{&quot;val&quot;:123}&#39;</span>));
+<span class="co">----------</span>
+{
+  <span class="ot">&quot;xyz&quot;</span> : {
+    <span class="ot">&quot;abc&quot;</span> : {
+      <span class="ot">&quot;val&quot;</span> : <span class="dv">123</span>
+    }
+  }
+}</code></pre>
+<p>Remove unwanted elements is also an option:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql">json_ext.remove(obj, <span class="st">&#39;xyz.abc&#39;</span>);
+<span class="co">----------</span>
+{
+  <span class="ot">&quot;xyz&quot;</span> : {
+  }
+}</code></pre>
+<p>In the 0.9.1 release, both JSON and JSON_LIST are hooked to the JSON Path implementation:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">declare</span>
+  v_obj json := json(<span class="st">&#39;{a:true}&#39;</span>);
+  v_list json_list := json_list(<span class="st">&#39;[1,2,[3,4]]&#39;</span>);
+<span class="kw">begin</span>
+  v_obj.path(<span class="st">&#39;a&#39;</span>).print;
+  v_list.path(<span class="st">&#39;[3][1]&#39;</span>).print;
+<span class="kw">end</span>;
+<span class="co">----------</span>
+<span class="kw">true</span>
+<span class="dv">3</span></code></pre>
+<p>The example files 8 to 10 provides a more detailed explaination.</p>
+<p>In the 0.9.2 release, it is also possible to use path to modify objects and arrays:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">declare</span>
+  v_obj json := json(<span class="st">&#39;{a:true}&#39;</span>);
+  v_list json_list := json_list(<span class="st">&#39;[1,2,[3,4]]&#39;</span>);
+<span class="kw">begin</span>
+  v_obj.path_put(<span class="st">&#39;a[2]&#39;</span>, json_list(<span class="st">&#39;[true, true]&#39;</span>));
+  v_obj.print;
+  v_list.path_put(<span class="st">&#39;[3][1]&#39;</span>, <span class="st">&#39;test&#39;</span>);
+  v_list.print;
+<span class="kw">end</span>;
+<span class="co">----------</span>
+{
+  <span class="ot">&quot;a&quot;</span> : [<span class="kw">null</span>, [<span class="kw">true</span>, <span class="kw">true</span>]]
+}
+[<span class="dv">1</span>, <span class="dv">2</span>, [<span class="ot">&quot;test&quot;</span>, <span class="dv">4</span>]]</code></pre>
+</section>
+<section id="behavior-error-handling" class="level1">
+<h1>Behavior &amp; Error Handling</h1>
+<p>Input to the parser is expected to be in the charset of the database. The objects that are generated contains unescaped values that will be escaped when emitted through the printer. To ensure correct JSON output, even from non-UTF databases, only ASCII chars are emitted. All the characters which are not part of ASCII will be escaped.</p>
+<p>The errors or exceptions that PL/JSON may throw, can be catched with the following code:</p>
+<pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">declare</span>
+  scanner_exception <span class="kw">exception</span>;
+  pragma exception_init(scanner_exception, -<span class="dv">20100</span>);
+  parser_exception <span class="kw">exception</span>;
+  pragma exception_init(parser_exception, -<span class="dv">20101</span>);
+  jext_exception <span class="kw">exception</span>;
+  pragma exception_init(jext_exception, -<span class="dv">20110</span>);
+  ...
+<span class="kw">begin</span>
+  ... json code ...
+<span class="kw">exception</span>
+  <span class="kw">when</span> scanner_exception <span class="kw">exception</span> <span class="kw">then</span> ...
+  <span class="kw">when</span> parser_exception <span class="kw">exception</span> <span class="kw">then</span> ...
+  <span class="kw">when</span> jext_exception <span class="kw">exception</span> <span class="kw">then</span> ...
+<span class="kw">end</span>;</code></pre>
+</section>
+<section id="known-limitations" class="level1">
+<h1>Known Limitations</h1>
+<ul>
+<li>key-names are limited to 4000 characters.</li>
+<li>The number parsing assumes that oracles number type can contain the input (in most cases it can).</li>
+</ul>
+</section>
+<section id="testsuite" class="level1">
+<h1>Testsuite</h1>
+<p>Any proper product is tested for correctness. So should PL/JSON be, with a testsuite that can be executed without installing any additional software on your database. You probaly don't need the testsuite, but if you modify the implementation or add more features, tests will be needed. Also if you discover a bug, you could report the bug by writing a relevant testcase.</p>
+</section>
+<section id="contributing" class="level1">
+<h1>Contributing</h1>
+<p>Write to us in the forums of sourceforge.net. We will be happy to hear from you.</p>
+<blockquote>
+<p>Q: ''I've added a lot of code, please merge my changes'</p>
+<p>A: Hmmm - it's not that we don't appriciate your work, but we would really prefer that you wrote tests and documentation to each feature - otherwise new code could easily break functionality.</p>
+</blockquote>
+<blockquote>
+<p>Q: ''I've added some changes and I might contribute them to the project, but what's in it for me?''</p>
+<p>A: This is not GPL, so you can keep your changes if you want to. When you are contributing then more eyes will look at your code. Possible errors might get detected and corrected and new features may arise from your features - making it a better product you can use.</p>
+</blockquote>
+</section>
+<section id="optional-packages" class="level1">
+<h1>Optional Packages</h1>
+<ul>
+<li>JSON_DYN A package that enables you to generate JSON from sql. Nested queries are not supported. See example 16 for more information.</li>
+<li>JSON_ML A package that converts from XML to JSON using a XSLT stylesheet. See www.jsonml.org.</li>
+<li>JSON_XML A package that converts a JSON object to XML.</li>
+<li>JSON_HELPER Work on JSON with set operations.</li>
+<li>JSON_UTIL_PKG Written by Morten Braten (http://ora-00001.blogspot.com). Generate JSON from sql using a XSLT stylesheet.</li>
+<li>JSON_AC Autocomplete package. Some PL/SQL IDE's provide autocompletion when using a package but not when using an object type. This package is a wrapper around the methods on JSON, JSON_LIST and JSON_VALUE. Use it if you often forget the methods on those object types.</li>
+</ul>
+</section>
+</body>
+</html>
