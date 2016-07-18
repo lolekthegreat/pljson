@@ -213,7 +213,7 @@ package body "JSON_PRINTER" as
             add_to_clob(buf, buf_str, elem.str);
         end if;
     end if;
-    add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end || newline_char);
+    add_to_clob(buf, buf_str, case when elem.num = 1 then '"' else '/**/' end);
   end;
 
   procedure ppEA(input json_list, indent number, buf in out nocopy clob, spaces boolean, buf_str in out nocopy varchar2) as
@@ -408,7 +408,7 @@ package body "JSON_PRINTER" as
             add_buf(buf, elem.str);
         end if;
     end if;
-    add_buf(buf, case when elem.num = 1 then '"' else '/**/' end || newline_char);
+    add_buf(buf, case when elem.num = 1 then '"' else '/**/' end);
   end;
   
   procedure ppObj(obj json, indent number, buf in out nocopy varchar2, spaces boolean);
