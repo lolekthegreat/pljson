@@ -1,5 +1,5 @@
-create or replace type pljson_value as object
-(
+create or replace type pljson_value force as object (
+
   /*
   Copyright (c) 2010 Jonas Krogsboell
 
@@ -57,7 +57,7 @@ create or replace type pljson_value as object
   /** Private variable for internal processing. */
   num_repr_double_p varchar2(1),
   /** Private variable for internal processing. */
-  object_or_array sys.anydata, /* object or array in here */
+  object_or_array pljson_element, /* object or array in here */
   /** Private variable for internal processing. */
   extended_str clob,
 
@@ -67,7 +67,7 @@ create or replace type pljson_value as object
   /** Private variable for internal processing. */
   mapindx number(32),
 
-  constructor function pljson_value(object_or_array sys.anydata) return self as result,
+  constructor function pljson_value(elem pljson_element) return self as result,
   constructor function pljson_value(str varchar2, esc boolean default true) return self as result,
   constructor function pljson_value(str clob, esc boolean default true) return self as result,
   constructor function pljson_value(num number) return self as result,
@@ -75,6 +75,8 @@ create or replace type pljson_value as object
   constructor function pljson_value(num_double binary_double) return self as result,
   constructor function pljson_value(b boolean) return self as result,
   constructor function pljson_value return self as result,
+
+  member function get_element return pljson_element,
 
   /**
    * <p>Create an empty <code>pljson_value</code>.</p>
@@ -225,6 +227,9 @@ create or replace type pljson_value as object
    *
    * @param str A <code>varchar2</code> to parse into a number.
    */
+  -- this procedure is meant to be used internally only
+  -- procedure does not work correctly if called standalone in locales that
+  -- use a character other than "." for decimal point
   member procedure parse_number(str varchar2),
 
   /* E.I.Sarmas (github.com/dsnz)   2016-12-01   support for binary_double numbers */
@@ -234,6 +239,7 @@ create or replace type pljson_value as object
    *
    * @return A <code>varchar2</code> up to 4000 characters.
    */
+  -- this procedure is meant to be used internally only
   member function number_toString return varchar2,
 
   /* Output methods */
@@ -246,7 +252,8 @@ create or replace type pljson_value as object
 
 ) not final;
 /
+show err
 
 create or replace type pljson_value_array as table of pljson_value;
 /
-sho err
+show err

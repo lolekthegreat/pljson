@@ -77,14 +77,27 @@ create or replace package pljson_ext as
   function get_date(obj pljson, path varchar2, base number default 1) return date;
   procedure put(obj in out nocopy pljson, path varchar2, elem date, base number default 1);
 
-  --experimental support of binary data with base64
-  function encodeBase64Blob2Clob (p_blob in  blob) return clob;
+  /*
+    encoding in lines of 64 chars ending with CR+NL
+  */
+  function encodeBase64Blob2Clob(p_blob in  blob) return clob;
+  /*
+    assumes single base64 string or broken into equal length lines of max 64 or 76 chars
+    (as specified by RFC-1421 or RFC-2045)
+    line ending can be CR+NL or NL
+  */
   function decodeBase64Clob2Blob(p_clob clob) return blob;
+
   function base64(binarydata blob) return pljson_list;
   function base64(l pljson_list) return blob;
 
   function encode(binarydata blob) return pljson_value;
   function decode(v pljson_value) return blob;
+
+  /*
+    implemented as a procedure to force you to declare the CLOB so you can free it later
+  */
+  procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8');
 
 end pljson_ext;
 /

@@ -35,6 +35,7 @@ PROMPT -- Compiling objects for PL/JSON --;
 PROMPT -----------------------------------;
 @@uninstall.sql
 
+@@src/pljson_element.type.decl.sql
 @@src/pljson_value.type.decl.sql
 @@src/pljson_list.type.decl.sql
 @@src/pljson.type.decl.sql
@@ -46,7 +47,7 @@ PROMPT -----------------------------------;
 @@src/pljson_ext.impl.sql
 @@src/pljson.type.impl.sql
 @@src/pljson_list.type.impl.sql
---@@src/grantsandsynonyms.sql --grants to core API
+
 @@src/pljson_ac.package.sql --Wrapper to enhance autocompletion
 
 PROMPT ------------------------------------------;
@@ -60,6 +61,10 @@ PROMPT ------------------------------------------;
 @@src/addons/pljson_table_impl.type.decl.sql -- dynamic table from json document
 @@src/addons/pljson_table_impl.type.impl.sql -- dynamic table from json document
 @@testsuite/pljson_ut.package.sql -- pljson unit test mini framework
+
+-- uncomment this and comment the block following if you want access by public
+--@@src/grantsandsynonyms.sql --grants and synonyms for public
+/* */
 -- synonyms for backwards compatibility
 create synonym json_parser for pljson_parser;
 create synonym json_printer for pljson_printer;
@@ -75,3 +80,4 @@ create synonym json_list for pljson_list;
 create synonym json_value_array for pljson_value_array;
 create synonym json_value for pljson_value;
 create synonym json_table for pljson_table;
+/* */

@@ -95,47 +95,86 @@ create or replace package body pljson_ext as
     return to_date(v);
   end;
 
+  /*
+    assumes single base64 string or broken into equal length lines of max 64 or 76 chars
+    (as specified by RFC-1421 or RFC-2045)
+    line ending can be CR+NL or NL
+  */
   function decodeBase64Clob2Blob(p_clob clob) return blob
   is
-    v_out_bl blob;
+    r_blob blob;
     clob_size number;
     pos number;
-    charBuff varchar2(32767);
-    dBuffer raw(32767);
-    v_readSize_nr number;
-    v_line_nr number;
+    c_buf varchar2(32767);
+    r_buf raw(32767);
+    v_read_size number;
+    v_line_size number;
   begin
-    dbms_lob.createTemporary(v_out_bl, true, dbms_lob.call);
-    v_line_nr := greatest(65, instr(p_clob, chr(10)), instr(p_clob, chr(13)));
-    v_readSize_nr := floor(32767/v_line_nr)*v_line_nr;
-    clob_size := dbms_lob.getLength(p_clob);
+    dbms_lob.createtemporary(r_blob, false, dbms_lob.call);
+    /*
+      E.I.Sarmas (github.com/dsnz)   2017-12-07   fix for alignment issues
+      assumes single base64 string or broken into equal length lines of max 64 or 76 followed by CR+NL
+      as specified by RFC-1421 or RFC-2045 which seem to be the supported ones by Oracle utl_encode
+      also support single NL instead of CR+NL !
+    */
+    clob_size := dbms_lob.getlength(p_clob);
+    v_line_size := 64;
+    if clob_size >= 65 and dbms_lob.substr(p_clob, 1, 65) = chr(10) then
+      v_line_size := 65;
+    elsif clob_size >= 66 and dbms_lob.substr(p_clob, 1, 65) = chr(13) then
+      v_line_size := 66;
+    elsif clob_size >= 77 and dbms_lob.substr(p_clob, 1, 77) = chr(10) then
+      v_line_size := 77;
+    elsif clob_size >= 78 and dbms_lob.substr(p_clob, 1, 77) = chr(13) then
+      v_line_size := 78;
+    end if;
+    --dbms_output.put_line('decoding in multiples of ' || v_line_size);
+    v_read_size := floor(32767/v_line_size)*v_line_size;
+    
     pos := 1;
-
     while (pos < clob_size) loop
-      dbms_lob.read(p_clob, v_readSize_nr, pos, charBuff);
-      dBuffer := utl_encode.base64_decode(utl_raw.cast_to_raw(charBuff));
-      dbms_lob.writeappend(v_out_bl, utl_raw.length(dBuffer), dBuffer);
-      pos := pos + v_readSize_nr;
+      dbms_lob.read(p_clob, v_read_size, pos, c_buf);
+      r_buf := utl_encode.base64_decode(utl_raw.cast_to_raw(c_buf));
+      dbms_lob.writeappend(r_blob, utl_raw.length(r_buf), r_buf);
+      pos := pos + v_read_size;
     end loop;
-    return v_out_bl;
-  end decodeBase64Clob2Blob;  
+    return r_blob;
+  end decodeBase64Clob2Blob;
 
-  function encodeBase64Blob2Clob (p_blob in  blob) return clob
+  /*
+    encoding in lines of 64 chars ending with CR+NL
+  */
+  function encodeBase64Blob2Clob(p_blob in  blob) return clob
   is
-    l_clob clob;
-    l_step pls_integer := 12000;
-    l_temp varchar2(32767);
+    r_clob clob;
+    /* E.I.Sarmas (github.com/dsnz)   2017-12-07   NOTE: must be multiple of 48 !!! */
+    c_step pls_integer := 12000;
+    c_buf varchar2(32767);
   begin
     if p_blob is not null then
-      dbms_lob.createtemporary (l_clob, false, dbms_lob.call);
-      for i in 0 .. trunc((dbms_lob.getlength(p_blob) - 1 )/l_step) loop
-        l_temp := utl_raw.cast_to_varchar2(utl_encode.base64_encode(dbms_lob.substr(p_blob, l_step, i * l_step + 1)));
-        dbms_lob.writeappend(lob_loc => l_clob, amount => length(l_temp), buffer => l_temp);
+      dbms_lob.createtemporary(r_clob, false, dbms_lob.call);
+      for i in 0 .. trunc((dbms_lob.getlength(p_blob) - 1)/c_step) loop
+        c_buf := utl_raw.cast_to_varchar2(utl_encode.base64_encode(dbms_lob.substr(p_blob, c_step, i * c_step + 1)));
+        /*
+          E.I.Sarmas (github.com/dsnz)   2017-12-07   fix for alignment issues
+          must output CR+NL at end always, so will align with the following block and can be decoded correctly
+          assumes ending in CR+NL
+        */
+        if substr(c_buf, length(c_buf)) != chr(10) then
+          c_buf := c_buf || CHR(13) || CHR(10);
+        end if;
+        /*
+        dbms_output.put_line(
+          'l=' || length(c_buf) ||
+          ' e=' || ascii(substr(c_buf, length(c_buf) - 1)) || ' ' || ascii(substr(c_buf, length(c_buf)))
+        );
+        */
+        dbms_lob.writeappend(lob_loc => r_clob, amount => length(c_buf), buffer => c_buf);
       end loop;
     end if;
-    return l_clob;
-  end encodeBase64Blob2Clob; 
-  
+    return r_clob;
+  end encodeBase64Blob2Clob;
+
   --Json Path parser
   function parsePath(json_path varchar2, base number default 1) return pljson_list as
     build_path varchar2(32767) := '[';
@@ -445,7 +484,7 @@ create or replace package body pljson_ext as
     --use backreference and path together
     inserter := val;
     for i in reverse 1 .. backreference.count loop
-  --    inserter.print(false);
+      -- inserter.print(false);
       if( i = 1 ) then
         keyval := path.get(1);
         if(keyval.is_string()) then
@@ -615,7 +654,7 @@ create or replace package body pljson_ext as
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
     v_amount PLS_INTEGER;
   begin
-    dbms_lob.createtemporary(c, TRUE);
+    dbms_lob.createtemporary(c, false, dbms_lob.call);
     c := encodeBase64Blob2Clob(binarydata);
     v_amount := DBMS_LOB.GETLENGTH(c);
     v_clob_offset := 1;
@@ -636,20 +675,20 @@ create or replace package body pljson_ext as
 
   function base64(l pljson_list) return blob as
     c clob := empty_clob();
-    bret blob;
+    b_ret blob;
 
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
 --    v_amount PLS_INTEGER;
   begin
-    dbms_lob.createtemporary(c, TRUE);
+    dbms_lob.createtemporary(c, false, dbms_lob.call);
     for i in 1 .. l.count loop
       dbms_lob.append(c, l.get(i).get_string());
     end loop;
 --    v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    bret := decodeBase64Clob2Blob(c);
+    b_ret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
-    return bret;
+    return b_ret;
   end base64;
 
   function encode(binarydata blob) return pljson_value as
@@ -657,7 +696,7 @@ create or replace package body pljson_ext as
     c clob;
     v_lang_context NUMBER := DBMS_LOB.DEFAULT_LANG_CTX;
   begin
-    dbms_lob.createtemporary(c, TRUE);
+    dbms_lob.createtemporary(c, false, dbms_lob.call);
     c := encodeBase64Blob2Clob(binarydata);
     obj := pljson_value(c);
 
@@ -669,20 +708,38 @@ create or replace package body pljson_ext as
 
   function decode(v pljson_value) return blob as
     c clob := empty_clob();
-    bret blob;
+    b_ret blob;
 
     v_lang_context NUMBER := 0; --DBMS_LOB.DEFAULT_LANG_CTX;
 --    v_amount PLS_INTEGER;
   begin
-    dbms_lob.createtemporary(c, TRUE);
+    dbms_lob.createtemporary(c, false, dbms_lob.call);
     v.get_string(c);
 --    v_amount := DBMS_LOB.GETLENGTH(c);
 --    dbms_output.put_line('L C'||v_amount);
-    bret := decodeBase64Clob2Blob(c);
+    b_ret := decodeBase64Clob2Blob(c);
     dbms_lob.freetemporary(c);
-    return bret;
+    return b_ret;
 
   end decode;
+
+  procedure blob2clob(b blob, c out clob, charset varchar2 default 'UTF8') as
+    v_dest_offset integer := 1;
+    v_src_offset integer := 1;
+    v_lang_context integer := 0;
+    v_warning integer := 0;
+  begin
+    dbms_lob.createtemporary(c, false, dbms_lob.call);
+    dbms_lob.converttoclob(
+      dest_lob => c,
+      src_blob => b,
+      amount => dbms_lob.LOBMAXSIZE,
+      dest_offset => v_dest_offset,
+      src_offset => v_src_offset,
+      blob_csid => nls_charset_id(charset),
+      lang_context => v_lang_context,
+      warning => v_warning);
+  end;
 
 end pljson_ext;
 /

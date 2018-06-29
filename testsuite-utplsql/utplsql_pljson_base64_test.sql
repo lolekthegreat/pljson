@@ -6,10 +6,65 @@
  *
  **/
 
-set serveroutput on format wrapped
-set linesize 66
+create or replace package utplsql_pljson_base64_test is
+  
+  --%suite(base64_test test)
+  --%suitepath(core)
+  
+  --%test(Test Base64 encode/decode size > 32K)
+  procedure test_base64_32K;
+  --%test(Base64 encode/decode size < 64, two =)
+  procedure test_base64_64_padtwo;
+  --%test(Base64 encode/decode size < 64, one =)
+  procedure test_base64_64_padone;
+  --%test(Base64 encode/decode size < 64, no  =)
+  procedure test_base64_64_padno;
+  
+end utplsql_pljson_base64_test;
+/
 
-declare
+create or replace package body utplsql_pljson_base64_test is
+  
+  EOL varchar2(10) := chr(13);
+  
+  -- INDENT_1 varchar2(10) := '  ';
+  INDENT_2 varchar2(10) := '  ';
+  
+  procedure pass(test_name varchar2 := null) as
+  begin
+    if (test_name is not null) then
+      dbms_output.put_line(INDENT_2 || 'OK: '|| test_name);
+    end if;
+    --ut.expect(true, str).to_be_true;
+  end;
+  
+  procedure fail(test_name varchar2 := null) as
+  begin
+    if (test_name is not null) then
+      dbms_output.put_line(INDENT_2 || 'FAILED: '|| test_name);
+    end if;
+    ut.fail(test_name);
+    --ut.expect(true, str).to_be_true;
+  end;
+  
+  procedure assertTrue(b boolean, test_name varchar2 := null) as
+  begin
+    if (b) then
+      pass(test_name);
+    else
+      fail(test_name);
+    end if;
+  end;
+  
+  procedure assertFalse(b boolean, test_name varchar2 := null) as
+  begin
+    if (not b) then
+      pass(test_name);
+    else
+      fail(test_name);
+    end if;
+  end;
+  
   procedure base64_check(w_clob in out clob) is
     obj_json pljson;
     tmp_json pljson;
@@ -185,13 +240,11 @@ declare
     pljson_ut.assertTrue(w_hash1 = w_hash2);
   exception
     when others then
-      pljson_ut.fail(test_name);
+      fail(test_name);
   end;
-begin
-  pljson_ut.testsuite('pljson_ext base64 test', 'pljson_base64.test.sql');
   
-  pljson_ut.testcase('Base64 encode/decode size > 32K');
-  declare
+  -- Base64 encode/decode size > 32K
+  procedure test_base64_32K is
     w_tmp_string varchar2(32000);
     w_clob clob;
   begin
@@ -778,7 +831,7 @@ begin
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
     w_tmp_string := 'IG4gCjAwMDAyMDI4NDIgMDAwMDAgbiAKMDAwMDI5MzI4MyAwMDAwMCBuIAowMDAwNDE4ODg1IDAwMDAwIG4gCjAwMDA0MTk5MTMgMDAwMDAgbiAKMDAwMDM5MTgzMSAwMDAwMCBuIAowMDAwMzkxODYzIDAwMDAwIG4gCjAwMDAzOTI1MDUgMDAwMDAgbiAKMDAwMDM5MjM1NiAwMDAwMCBuIAowMDAwMzkyMjAzIDAwMDAwIG4gCjAwMDAyOTMzMDUgMDAwMDAgbiAKMDAwMDM4NjgzNiAwMDAwMCBuIAowMDAwNDE1ODExIDAwMDAwIG4gCjAwMDA0MTc4NjEgMDAwMDAgbiAKMDAwMDM5MjI4MSAwMDAwMCBuIAowMDAwMzkyMzEzIDAwMDAwIG4gCjAwMDAzOTU4NjMgMDAwMDAgbiAKMDAwMDM5OTIxMiAwMDAwMCBuIAowMDAwNDA2MzMyIDAwMDAwIG4gCjAwMDA0MTA1MTYgMDAwMDAgbiAKMDAwMDQxNTc5MCAwMDAwMCBuIAowMDAwNDI0MTY3IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgOTUgL1Jvb3QgMSAwIFIgL0luZm8gMiAwIFIKPj4Kc3RhcnR4cmVmCjQzMjAxNAolJUVPRgo=';
     dbms_lob.writeappend(w_clob, length(w_tmp_string), w_tmp_string);
-    
+
     base64_check(w_clob);
     
     dbms_lob.freetemporary(w_clob);
@@ -787,8 +840,7 @@ begin
   /*
     E.I.Sarmas (github.com/dsnz)   2018-05-08   more tests, refactored common check procedure
   */
-  pljson_ut.testcase('Base64 encode/decode size < 64, two =');
-  declare
+  procedure test_base64_64_padtwo is
     w_tmp_string varchar2(32000);
     w_clob clob;
   begin
@@ -806,8 +858,7 @@ begin
     dbms_lob.freetemporary(w_clob);
   end;
   
-  pljson_ut.testcase('Base64 encode/decode size < 64, one =');
-  declare
+  procedure test_base64_64_padone is
     w_tmp_string varchar2(32000);
     w_clob clob;
   begin
@@ -825,8 +876,7 @@ begin
     dbms_lob.freetemporary(w_clob);
   end;
   
-  pljson_ut.testcase('Base64 encode/decode size < 64, no  =');
-  declare
+  procedure test_base64_64_padno is
     w_tmp_string varchar2(32000);
     w_clob clob;
   begin
@@ -844,7 +894,5 @@ begin
     dbms_lob.freetemporary(w_clob);
   end;
   
-  pljson_ut.testsuite_report;
-  
-end;
+end utplsql_pljson_base64_test;
 /

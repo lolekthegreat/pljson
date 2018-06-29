@@ -1,11 +1,14 @@
 
-create or replace package ut_pljson_test is
+create or replace package utplsql_pljson_test is
   
   --%suite(pljson test)
   --%suitepath(core)
   
   --%test(Test empty pljson)
   procedure test_empty;
+  
+  --%test(Test constructor with pljson_varray)
+  procedure test_blob;
   
   --%test(Test put method)  
   procedure test_put_method;
@@ -46,10 +49,10 @@ create or replace package ut_pljson_test is
   --%test(Test insert null pair name)
   procedure test_insert_null_pair_name;
   
-end ut_pljson_test;
+end utplsql_pljson_test;
 /
 
-create or replace package body ut_pljson_test is
+create or replace package body utplsql_pljson_test is
   
   EOL varchar2(10) := chr(13);
   
@@ -102,6 +105,16 @@ create or replace package body ut_pljson_test is
     obj := pljson('{     }');
     assertTrue(obj.count = 0, 'obj.count = 0');
     assertTrue(obj.to_char(false) = '{}', 'obj.to_char(false) = ''{}''');
+  end;
+  
+  -- constructor with pljson_varray
+  procedure test_blob is
+    obj pljson;
+  begin
+    obj := pljson(pljson_varray('key1', 'val1', 'key2', 'val2', 'key3', 'val3'));
+    assertTrue(nvl(pljson_ext.get_string(obj, 'key1'), 'x1') = 'val1', 'nvl(pljson_ext.get_string(obj, ''key1''), ''x1'') = ''val1''');
+    assertTrue(nvl(pljson_ext.get_string(obj, 'key2'), 'x2') = 'val2', 'nvl(pljson_ext.get_string(obj, ''key2''), ''x2'') = ''val2''');
+    assertTrue(nvl(pljson_ext.get_string(obj, 'key3'), 'x3') = 'val3', 'nvl(pljson_ext.get_string(obj, ''key3''), ''x3'') = ''val3''');
   end;
   
   -- put method 
@@ -338,5 +351,5 @@ create or replace package body ut_pljson_test is
       fail(test_name);
   end;
   
-end ut_pljson_test;
+end utplsql_pljson_test;
 /
