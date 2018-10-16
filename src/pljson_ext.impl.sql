@@ -98,84 +98,16 @@ create or replace package body pljson_ext as
     return to_date(v);
   end;
 
-  /*
-    assumes single base64 string or broken into equal length lines of max 64 or 76 chars
-    (as specified by RFC-1421 or RFC-2045)
-    line ending can be CR+NL or NL
-  */
   function decodeBase64Clob2Blob(p_clob clob) return blob
   is
-    r_blob blob;
-    clob_size number;
-    pos number;
-    c_buf varchar2(32767);
-    r_buf raw(32767);
-    v_read_size number;
-    v_line_size number;
   begin
-    dbms_lob.createtemporary(r_blob, false, dbms_lob.call);
-    /*
-      E.I.Sarmas (github.com/dsnz)   2017-12-07   fix for alignment issues
-      assumes single base64 string or broken into equal length lines of max 64 or 76 followed by CR+NL
-      as specified by RFC-1421 or RFC-2045 which seem to be the supported ones by Oracle utl_encode
-      also support single NL instead of CR+NL !
-    */
-    clob_size := dbms_lob.getlength(p_clob);
-    v_line_size := 64;
-    if clob_size >= 65 and dbms_lob.substr(p_clob, 1, 65) = chr(10) then
-      v_line_size := 65;
-    elsif clob_size >= 66 and dbms_lob.substr(p_clob, 1, 65) = chr(13) then
-      v_line_size := 66;
-    elsif clob_size >= 77 and dbms_lob.substr(p_clob, 1, 77) = chr(10) then
-      v_line_size := 77;
-    elsif clob_size >= 78 and dbms_lob.substr(p_clob, 1, 77) = chr(13) then
-      v_line_size := 78;
-    end if;
-    --dbms_output.put_line('decoding in multiples of ' || v_line_size);
-    v_read_size := floor(32767/v_line_size)*v_line_size;
-    
-    pos := 1;
-    while (pos < clob_size) loop
-      dbms_lob.read(p_clob, v_read_size, pos, c_buf);
-      r_buf := utl_encode.base64_decode(utl_raw.cast_to_raw(c_buf));
-      dbms_lob.writeappend(r_blob, utl_raw.length(r_buf), r_buf);
-      pos := pos + v_read_size;
-    end loop;
-    return r_blob;
+    return(hibis_util.decodeBinaryBase64(p_clob));
   end decodeBase64Clob2Blob;
 
-  /*
-    encoding in lines of 64 chars ending with CR+NL
-  */
   function encodeBase64Blob2Clob(p_blob in  blob) return clob
   is
-    r_clob clob;
-    /* E.I.Sarmas (github.com/dsnz)   2017-12-07   NOTE: must be multiple of 48 !!! */
-    c_step pls_integer := 12000;
-    c_buf varchar2(32767);
   begin
-    if p_blob is not null then
-      dbms_lob.createtemporary(r_clob, false, dbms_lob.call);
-      for i in 0 .. trunc((dbms_lob.getlength(p_blob) - 1)/c_step) loop
-        c_buf := utl_raw.cast_to_varchar2(utl_encode.base64_encode(dbms_lob.substr(p_blob, c_step, i * c_step + 1)));
-        /*
-          E.I.Sarmas (github.com/dsnz)   2017-12-07   fix for alignment issues
-          must output CR+NL at end always, so will align with the following block and can be decoded correctly
-          assumes ending in CR+NL
-        */
-        if substr(c_buf, length(c_buf)) != chr(10) then
-          c_buf := c_buf || CHR(13) || CHR(10);
-        end if;
-        /*
-        dbms_output.put_line(
-          'l=' || length(c_buf) ||
-          ' e=' || ascii(substr(c_buf, length(c_buf) - 1)) || ' ' || ascii(substr(c_buf, length(c_buf)))
-        );
-        */
-        dbms_lob.writeappend(lob_loc => r_clob, amount => length(c_buf), buffer => c_buf);
-      end loop;
-    end if;
-    return r_clob;
+	  return(hibis_util.encodeBinaryBase64(p_blob));
   end encodeBase64Blob2Clob;
 
   --Json Path parser
